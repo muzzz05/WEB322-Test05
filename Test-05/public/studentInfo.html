@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    form {
+      background-color: #1e1e2f;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+      max-width: 500px;
+      width: 100%;
+    }
+    form label {
+      display: block;
+      margin-bottom: 5px;
+      color: #00b4d8;
+      font-weight: bold;
+    }
+    form input, form textarea, form button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #00b4d8;
+      border-radius: 5px;
+      background-color: #222233;
+      color: #ffffff;
+      font-size: 16px;
+    }
+    form input:focus, form textarea:focus {
+      outline: none;
+      border-color: #0077b6;
+      box-shadow: 0 0 5px #0077b6;
+    }
+    form button {
+      background-color: #00b4d8;
+      color: #121212;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    form button:hover {
+      background-color: #0077b6;
+    }
+    .error {
+      color: #ff4d4d;
+      font-size: 0.9em;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <form id="studentForm">
+    <label for="student_id">Student ID</label>
+    <input type="text" id="student_id" name="student_id" required>
+    <div id="student_id_error" class="error"></div>
+
+    <label for="first_name">First Name</label>
+    <input type="text" id="first_name" name="first_name" required>
+    <div id="first_name_error" class="error"></div>
+
+    <label for="last_name">Last Name</label>
+    <input type="text" id="last_name" name="last_name" required>
+    <div id="last_name_error" class="error"></div>
+
+    <label for="date_of_birth">Date of Birth</label>
+    <input type="date" id="date_of_birth" name="date_of_birth" required>
+    <div id="date_of_birth_error" class="error"></div>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required>
+    <div id="email_error" class="error"></div>
+
+    <label for="enrollment_date">Enrollment Date</label>
+    <input type="date" id="enrollment_date" name="enrollment_date" required>
+    <div id="enrollment_date_error" class="error"></div>
+
+    <label for="courses">Courses (JSON format)</label>
+    <textarea id="courses" name="courses" rows="5" placeholder='Example: ["Math", "Science"]' required></textarea>
+    <div id="courses_error" class="error"></div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById('studentForm').addEventListener('submit', async function (e) {
+      e.preventDefault(); // Prevent default form submission
+
+      // Clear previous error messages
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+      try {
+        // Collect form data
+        const formData = {
+          student_id: document.getElementById('student_id').value,
+          first_name: document.getElementById('first_name').value,
+          last_name: document.getElementById('last_name').value,
+          date_of_birth: document.getElementById('date_of_birth').value,
+          email: document.getElementById('email').value,
+          enrollment_date: document.getElementById('enrollment_date').value,
+          courses: JSON.parse(document.getElementById('courses').value) // Parse JSON input
+        };
+
+        // Validate JSON format for courses
+        if (!Array.isArray(formData.courses)) {
+          throw new Error('Courses must be a valid JSON array.');
+        }
+
+        // Send data to backend
+        const response = await fetch('/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to submit the form.');
+        }
+
+        alert('Student information submitted successfully!');
+        document.getElementById('studentForm').reset(); // Reset the form
+      } catch (error) {
+        // Handle validation or server errors
+        console.error('Error:', error.message);
+        if (error.message.includes('JSON')) {
+          document.getElementById('courses_error').textContent = error.message;
+        } else {
+          alert(error.message);
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
